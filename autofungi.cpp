@@ -5,8 +5,12 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <MQ135.h>
+#include "ppm.cpp"
+#
 
 LiquidCrystal_I2C lcd(0x27,16,2);
+
+LcdManager lcdManager = new LcdManager();
 
 DHT am2301(00,DHT21);
 
@@ -20,21 +24,9 @@ const char* ssid = "AutoFungi";
 
 const char* password = "MaFuCh2023";
 
-String readPPM() {
-  ppm = mq135.getPPM();
-  if (isnan(ppm)) {    
-    Serial.println("Failed to read from MQ135 sensor!");
-    return "--";
-  }
-  else {
-    Serial.println(ppm*10);
-    return String(ppm*10);
-  }
-}
-
 String readDHTTemperature() {
-  float t = am2301.readTemperature();
-  if (isnan(t)) {    
+  float t = temp;
+  if (isnan(t)) {
     Serial.println("Failed to read from DHT sensor!");
     return "--";
   }
@@ -199,16 +191,7 @@ void loop(){
   temp = am2301.readTemperature();
   ppm = mq135.getPPM();
 
-  lcd.clear();
-  lcd.setCursor(7,0);
-  lcd.print(ppm*10);
-  lcd.print("ppm");
-  lcd.setCursor(0,1);
-  lcd.print(temp);
-  lcd.write(223);
-  lcd.print("C");
-  lcd.setCursor(10,1);
-  lcd.print(humidity);
-  lcd.print("%");
+  lcdManager.updateStatus(temp, ...);
+
   delay(2000);
 }
